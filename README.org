@@ -1,0 +1,16 @@
+* Intro
+
+The [[http://dp.la.org][Digital Public Library of America]] is interesting and they have an
+[[http://api.dp.la/][API]], so this is some code to play with that.
+
+The cl-dpla package is established via cl-dpla.asd by doing (ql:quickload "cl-dpla").
+It exports cl-dpla:request which will make a request of
+the API parse the json and return it.  For example:
+#+begin_src lisp
+(cl-dpla:request :items :q " :items :q "guastavino")
+#+end_src*
+Note that currently there is not comprehension of json-ld, sad isn't it.
+
+The dpla-hacking package is established by dpla-hacking.asd by doing
+(ql:quickload "dpla-hacking").  It doesn't export anything.  It's just
+some random hackery.

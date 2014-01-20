@@ -1,0 +1,3 @@
+
+(setf *api-key* "long-hex-value-goes-here")
+(setf *api-user-email* "api-user-email-goes-here@example.com")
