@@ -1,7 +1,9 @@
 * Intro
 
-The [[http://dp.la.org][Digital Public Library of America]] is interesting and they have an
+The [[http://dp.la][Digital Public Library of America]] is interesting and they have an
 [[http://dp.la/info/developers/codex/][API]], so this is some code to play with that.
+
+* CL-DPLA
 
 The cl-dpla package is established via cl-dpla.asd by doing:
 #+begin_src lisp
@@ -14,6 +16,84 @@ the API parse the json and return it.  For example:
 #+end_src
 Note that currently there is no comprehension of json-ld, sad isn't it.
 
+
+For example:
+
+#+begin_src lisp
+;; Load it.
+(ql:quickload "cl-dpla")
+;; Fetch a single item.
+(pprint (cl-dpla:request '("items" "fffffed915b46b7d71bcc8d888900c4b")))
+;; Fetch a three items about mangos
+(defparameter *mango-stuff* (cl-dpla:request :items :q "mango" :page--size 3))
+;; Let's look at just the 2nd of the docs returned
+(pprint (second (rest (assoc :docs *mango-stuff*))))
+#+end_src lisp
+
+That last form outputs something list this:
+#+begin_example
+((:@context (:edm . "http://www.europeana.eu/schemas/edm/")
+  (:is-shown-at . "edm:isShownAt") (:dpla . "http://dp.la/terms/")
+  (:data-provider . "edm:dataProvider")
+  (:aggregated-digital-resource . "dpla:aggregatedDigitalResource")
+  (:state . "dpla:state") (:has-view . "edm:hasView")
+  (:provider . "edm:provider") (:collection . "dpla:aggregation")
+  (:object . "edm:object") (:state-located-in . "dpla:stateLocatedIn")
+  (:begin (:@type . "xsd:date") (:@id . "dpla:dateRangeStart"))
+  (:@vocab . "http://purl.org/dc/terms/")
+  (:+lcsh+ . "http://id.loc.gov/authorities/subjects")
+  (:source-resource . "edm:sourceResource") (:name . "xsd:string")
+  (:coordinates . "dpla:coordinates")
+  (:end (:@type . "xsd:date") (:@id . "dpla:dateRangeEnd"))
+  (:original-record . "dpla:originalRecord"))
+ (:is-shown-at . "http://catalog.hathitrust.org/Record/006697154")
+ (:data-provider "University of California")
+ (:provider (:@id . "http://dp.la/api/contributor/hathitrust")
+  (:name . "HathiTrust"))
+ (:object
+  . "http://bks9.books.google.com/books?id=J2MzAAAAIAAJ&printsec=frontcover&img=1&zoom=5")
+ (:ingestion-sequence . 7) (:id . "de261fead45323a233638d12c2e7cfd5")
+ (:--rev . "4-f43368cde6bad8fc0c110a01918bb643")
+ (:ingest-date . "2014-01-13T14:09:24.631974")
+ (:--id . "hathitrust--006697154")
+ (:admin (:object--status . 1) (:source-resource (:title . "The mango")))
+ (:source-resource (:title "The mango")
+  (:extent "129 numb. l. incl. mounted illus. 26 cm.")
+  (:description "Thesis (M.S.)--Univ. of California. May, 1916."
+   "Bibliography: p. 108-117.")
+  (:subject ((:name . "Mango")))
+  (:language ((:iso-639--3 . "eng") (:name . "English")))
+  (:format "Electronic resource" "Language material")
+  (:date (:display-date . "1916") (:end . "1916") (:begin . "1916"))
+  (:type . "text")
+  (:identifier "sdr-nrlfGLAD167876434-B" "(OCoLC)25260520"
+   "Hathi: 006697154")
+  (:publisher "[Berkeley]") (:creator "Bembower, William")
+  (:spec-type . "Book"))
+ (:ingest-type . "item")
+ (:@id . "http://dp.la/api/items/de261fead45323a233638d12c2e7cfd5")
+ (:original-record
+  (:provider (:@id . "http://dp.la/api/contributor/hathitrust")
+   (:name . "HathiTrust Digital Library"))
+  (:--id . "006697154")
+  (:controlfield ((:tag . "001") (:\#TEXT . "006697154"))
+   ((:tag . "003") (:\#TEXT . "MiAaHDL"))
+   ((:tag . "005") (:\#TEXT . "20090408000000.0"))
+   ((:tag . "006") (:\#TEXT . "m        d        "))
+   ((:tag . "007") (:\#TEXT . "cr bn ---auaua"))
+   ((:tag . "008")
+    (:\#TEXT . "920225s1916    caua     b   s000 0 eng d")))
+  (:datafield
+   ((:tag . "035") (:ind-2 . " ") (:ind-1 . " ")
+    (:subfield (:\#TEXT . "sdr-nrlfGLAD167876434-B") (:code . "a")))
+   ((:tag . "035") (:ind-2 . " ") (:ind-1 . " ")
+    (:subfield (:\#TEXT . "(OCoLC)25260520") (:code . "a")))
+   ...
+  (:leader . "00563nam a2200193K  4500"))
+ (:score . 11.987338))
+#+end_example
+
+* DPLA-HACKING
 The dpla-hacking package is established by dpla-hacking.asd by doing
 #+begin_src lisp
 (ql:quickload "dpla-hacking")
@@ -21,3 +101,43 @@ The dpla-hacking package is established by dpla-hacking.asd by doing
 
 It doesn't export anything.  It is just some random (incomprehensible)
 hackery.
+
+#+begin_src lisp
+;; Load it.
+(ql:quickload "dpla-hacking")
+(in-package #:dpla-hacking)
+;; sketch out what paths are in the tree of objects, and the
+;; types found on the leaves.
+(show-property-tree-of-query :items :page--size 2 :q "mango")
+#+end_src
+
+That outputs something like this:
+
+#+begin_example
+:items  -- nil
+:items :facets  -- null
+:items :docs  -- list-of-alist
+:items :docs :score  -- double-float
+:items :docs :original-record  -- alist
+:items :docs :original-record :leader  -- string
+:items :docs :original-record :datafield  -- list-of-alist
+:items :docs :original-record :datafield :subfield  -- (or list-of-alist alist)
+:items :docs :original-record :datafield :subfield :code  -- (or string hex-string)
+:items :docs :original-record :datafield :subfield :\#TEXT  -- (or decimal-string string)
+:items :docs :original-record :datafield :ind-1  -- (or decimal-string string)
+:items :docs :original-record :datafield :ind-2  -- (or decimal-string string)
+:items :docs :original-record :datafield :tag  -- decimal-string
+:items :docs :original-record :controlfield  -- list-of-alist
+:items :docs :original-record :controlfield :\#TEXT  -- (or string decimal-string)
+:items :docs :original-record :controlfield :tag  -- decimal-string
+:items :docs :original-record :indexed-structured  -- alist
+:items :docs :original-record :indexed-structured :name  -- string
+:items :docs :original-record :indexed-structured :date  -- string
+:items :docs :original-record :indexed-structured :place  -- string
+:items :docs :original-record :indexed-structured :online--media--type  -- string
+:items :docs :original-record :indexed-structured :object--type  -- string
+:items :docs :original-record :indexed-structured :geo-location  -- alist
+:items :docs :original-record :indexed-structured :geo-location :+l1+  -- alist
+:items :docs :original-record :indexed-structured :geo-location :+l1+ :@type  -- string
+... many more lines ...
+#+end_example

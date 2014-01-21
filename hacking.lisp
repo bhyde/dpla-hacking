@@ -8,21 +8,21 @@
 (defun doc-properties ()
   (loop 
      with properties = () finally (return properties)
-     for doc in (rest (assoc :docs *last-query-result*))
+     for doc in (rest (assoc :docs dpla::*last-query-result*))
      do (loop for (property . nil) in doc
              do (pushnew property properties))))
 
 (defun original-record-properties ()
   (loop 
      with properties = () finally (return properties)
-     for doc in (rest (assoc :docs *last-query-result*))
+     for doc in (rest (assoc :docs dpla::*last-query-result*))
      as original-record = (rest (assoc :original-record doc))
      do (loop for (property . nil) in original-record
              do (pushnew property properties))))
 
 (defun print-doc-fields (&rest keys)
   (loop 
-     for doc in (rest (assoc :docs *last-query-result*))
+     for doc in (rest (assoc :docs dpla::*last-query-result*))
      do
        (loop initially (format t "~&")
             for key in keys
@@ -141,4 +141,10 @@
               (show-path-to x)
               (format t " -- ~S" (type-guess x))))
      (map-over-property-description property-tree-root #'show-node)))
- 
+
+(defun show-property-tree-of-query (&rest query)
+  (setf *root-of-item-property-tree* 
+    (make-instance 'property-description :parent nil :name :items))
+  (add-property-descriptions *root-of-item-property-tree*
+                             (apply #'cl-dpla:request query))
+  (show-property-tree *root-of-item-property-tree*))
